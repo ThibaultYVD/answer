@@ -26,12 +26,13 @@ const db = {};
 db.Sequelize = Sequelize;
 db.sequelize = sequelize;
 
-db.Quizz = require('./Quizz.js')(sequelize, Sequelize);
+db.Quiz = require('./Quiz.js')(sequelize, Sequelize);
 db.Question = require('./Question.js')(sequelize, Sequelize);
 db.Answer = require('./Answer.js')(sequelize, Sequelize);
 db.User = require('./User.js')(sequelize, Sequelize);
 db.Role = require('./Role.js')(sequelize, Sequelize);
 db.UserRole = require('./UserRole.js')(sequelize, Sequelize);
+db.CompletedQuizes = require('./CompletedQuizes.js')(sequelize, Sequelize);
 
 // Configuration des relations
 Object.values(db).forEach((model) => {
@@ -40,14 +41,13 @@ Object.values(db).forEach((model) => {
 	}
 });
 
-
 (async () => {
 	await sequelize.sync();
 	console.log('Les modèles sont synchronisés avec la base de données.');
 
-	const quizzData = [
+	const quizData = [
 		{
-			name: 'Quizz 1',
+			quiz_name: 'quiz 1',
 			Questions: [
 				{
 					question: 'Quelle est la couleur du cheval Blanc d\'Henri IV ?',
@@ -92,7 +92,7 @@ Object.values(db).forEach((model) => {
 			],
 		},
 		{
-			name: 'Quizz 2',
+			quiz_name: 'quiz 2',
 			Questions: [
 				{
 					question: 'Quel langage utilise Sequelize ?',
@@ -123,10 +123,10 @@ Object.values(db).forEach((model) => {
 	];
 
 
-	for (const quizz of quizzData) {
-		await db.Quizz.findOrCreate({
+	for (const quiz of quizData) {
+		await db.Quiz.findOrCreate({
 			where: {},
-			defaults: quizz,
+			defaults: quiz,
 			include: [{
 				model: db.Question,
 				include: [db.Answer],

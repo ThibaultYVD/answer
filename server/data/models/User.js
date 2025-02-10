@@ -35,6 +35,13 @@ module.exports = (sequelize, Sequelize) => {
 			through: models.UserRole,
 			foreignKey: 'user_id',
 			otherKey: 'role_id',
+			onDelete: 'CASCADE',
+		});
+		User.belongsToMany(models.Quiz, {
+			through: models.CompletedQuizes,
+			foreignKey: 'user_id',
+			otherKey: 'quiz_id',
+			onDelete: 'CASCADE',
 		});
 	};
 
