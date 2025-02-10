@@ -26,11 +26,13 @@ const db = {};
 db.Sequelize = Sequelize;
 db.sequelize = sequelize;
 
-db.Quizz = require('./Quizz.js')(sequelize, Sequelize);
+db.Quiz = require('./Quiz.js')(sequelize, Sequelize);
 db.Question = require('./Question.js')(sequelize, Sequelize);
 db.Answer = require('./Answer.js')(sequelize, Sequelize);
-db.Users = require('./Users.js')(sequelize, Sequelize);
+db.User = require('./User.js')(sequelize, Sequelize);
 db.Role = require('./Role.js')(sequelize, Sequelize);
+db.UserRole = require('./UserRole.js')(sequelize, Sequelize);
+db.CompletedQuizes = require('./CompletedQuizes.js')(sequelize, Sequelize);
 
 // Configuration des relations
 Object.values(db).forEach((model) => {
@@ -39,23 +41,13 @@ Object.values(db).forEach((model) => {
 	}
 });
 
-
-db.Users.belongsToMany(db.Role, {
-	through: 'user_role', foreignKey: 'user_id',
-});
-
-db.Role.belongsToMany(db.Users, {
-	through: 'user_role', foreignKey: 'role_id',
-});
-
-
 (async () => {
 	await sequelize.sync();
 	console.log('Les modèles sont synchronisés avec la base de données.');
 
-	const quizzData = [
+	const quizData = [
 		{
-			name: 'Quizz 1',
+			quiz_name: 'quiz 1',
 			Questions: [
 				{
 					question: 'Quelle est la couleur du cheval Blanc d\'Henri IV ?',
@@ -100,7 +92,7 @@ db.Role.belongsToMany(db.Users, {
 			],
 		},
 		{
-			name: 'Quizz 2',
+			quiz_name: 'quiz 2',
 			Questions: [
 				{
 					question: 'Quel langage utilise Sequelize ?',
@@ -131,14 +123,26 @@ db.Role.belongsToMany(db.Users, {
 	];
 
 
-	for (const quizz of quizzData) {
-		await db.Quizz.create(quizz, {
+	for (const quiz of quizData) {
+		await db.Quiz.findOrCreate({
+			where: {},
+			defaults: quiz,
 			include: [{
 				model: db.Question,
 				include: [db.Answer],
 			}],
 		});
 	}
+
+	await db.Role.findOrCreate({
+		where: { role_name: 'user' },
+		defaults: { role_name: 'user' },
+	});
+
+	await db.Role.findOrCreate({
+		where: { role_name: 'admin' },
+		defaults: { role_name: 'admin' },
+	});
 
 	console.log('Données insérées avec succès !');
 })();

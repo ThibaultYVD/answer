@@ -1,10 +1,10 @@
 async function routes(app) {
 	const server = require('./server.routes');
-	const quizz = require('./quizz.routes');
+	const quiz = require('./quiz.routes');
 
 
 	app.use('/', server);
-	app.use('/quizz', quizz, verifyToken);
+	app.use('/quiz', quiz, verifyToken);
 }
 
 module.exports = routes;

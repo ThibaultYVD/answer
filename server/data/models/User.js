@@ -30,5 +30,20 @@ module.exports = (sequelize, Sequelize) => {
 		timestamps: false,
 	});
 
+	User.associate = (models) => {
+		User.belongsToMany(models.Role, {
+			through: models.UserRole,
+			foreignKey: 'user_id',
+			otherKey: 'role_id',
+			onDelete: 'CASCADE',
+		});
+		User.belongsToMany(models.Quiz, {
+			through: models.CompletedQuizes,
+			foreignKey: 'user_id',
+			otherKey: 'quiz_id',
+			onDelete: 'CASCADE',
+		});
+	};
+
 	return User;
 };
