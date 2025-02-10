@@ -1,13 +1,16 @@
-require('dotenv').config();
 const express = require('express');
 const app = express();
-const bodyParser = require('body-parser');
-const routes = require('./routes/routes');
+const cors = require('cors');
+
 const session = require('express-session');
 const RedisStore = require('connect-redis').default;
 const redis = require('redis');
+const bodyParser = require('body-parser');
+app.use(cors());
+require('dotenv/config');
+const routes = require('./routes/routes');
 
-const cors = require('cors');
+app.use(express.urlencoded({ extended: true }));
 
 const PORT = 3001;
 app.use(bodyParser.json());
@@ -17,11 +20,10 @@ const redisClient = redis.createClient({
 	username: 'default',
 	password: process.env.REDIS_PASSWORD,
 	socket: {
-		host: 'redis-10405.c339.eu-west-3-1.ec2.redns.redis-cloud.com',
-		port: 10405,
+		host: 'redis-11219.c339.eu-west-3-1.ec2.redns.redis-cloud.com',
+		port: 11219,
 	},
 });
-
 redisClient.connect()
 	.then(() => console.log('Connected to Redis successfully!'))
 	.catch((err) => console.error('Failed to connect to Redis:', err));

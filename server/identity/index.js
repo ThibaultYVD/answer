@@ -6,7 +6,7 @@ const session = require('express-session');
 const RedisStore = require('connect-redis').default
 const redis = require('redis');
 
-app.use(cors({ origin: "http://localhost:8080", credentials: true }));
+app.use(cors());
 require('dotenv/config')
 const db = require("./model/Models");
 
