@@ -29,23 +29,15 @@ db.sequelize = sequelize;
 db.Quizz = require('./Quizz.js')(sequelize, Sequelize);
 db.Question = require('./Question.js')(sequelize, Sequelize);
 db.Answer = require('./Answer.js')(sequelize, Sequelize);
-db.Users = require('./Users.js')(sequelize, Sequelize);
+db.User = require('./User.js')(sequelize, Sequelize);
 db.Role = require('./Role.js')(sequelize, Sequelize);
+db.UserRole = require('./UserRole.js')(sequelize, Sequelize);
 
 // Configuration des relations
 Object.values(db).forEach((model) => {
 	if (model.associate) {
 		model.associate(db);
 	}
-});
-
-
-db.Users.belongsToMany(db.Role, {
-	through: 'user_role', foreignKey: 'user_id',
-});
-
-db.Role.belongsToMany(db.Users, {
-	through: 'user_role', foreignKey: 'role_id',
 });
 
 
@@ -139,6 +131,13 @@ db.Role.belongsToMany(db.Users, {
 			}],
 		});
 	}
+
+	await db.Role.create({
+		role_name: 'user',
+	});
+	await db.Role.create({
+		role_name: 'admin',
+	});
 
 	console.log('Données insérées avec succès !');
 })();
