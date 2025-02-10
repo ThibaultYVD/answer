@@ -9,21 +9,45 @@ const bcrypt = require("bcryptjs");
 exports.signup = async (req, res) => {
 
     try {
+        const { first_name, last_name, email, password } = req.body;
+
+        if (!first_name || !last_name || !email || !password) {
+            return res.status(400).json({ message: "Tous les champs sont obligatoires." });
+        }
+
+        if (!isPasswordValid(password)) {
+            return res.status(400).json({ 
+                message: "Le mot de passe doit contenir au minimum 8 caractères, une majuscule, une minuscule, un chiffre et un caractère spécial."
+            });
+        }
+
+        const existingUser = await User.findOne({ where: { email } });
+        if (existingUser) {
+            return res.status(400).json({ error: "Ce nom d'utilisateur est déjà pris." });
+        }
+
+        const hashedPassword = bcrypt.hashSync(password, 8);
+
         const user = await User.create({
             first_name: req.body.first_name,
             last_name: req.body.last_name,
             email: req.body.email,
-            password: bcrypt.hashSync(req.body.password, 8),
+            password: hashedPassword,
             created_at: new Date(),
         });
 
-        const result = user.setRoles([1])
-        if (result) res.status(200).json({ message: "Utilisateur enregistré avec succès!" });
+        user.setRoles([1])
+        res.status(200).json({ message: "Utilisateur enregistré avec succès!" });
 
     } catch (error) {
-        res.status(500).send({ message: error.message });
+        res.status(500).send({ error: error.message });
     }
 };
+
+function isPasswordValid(password){
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+    return passwordRegex.test(password)
+}
 
 exports.signin = async (req, res) => {
     try {

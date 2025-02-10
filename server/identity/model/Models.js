@@ -28,15 +28,13 @@ db.sequelize = sequelize;
 
 db.User = require("./User.js")(sequelize, Sequelize);
 db.Role = require("./Role.js")(sequelize, Sequelize)
+db.UserRole = require('./UserRole.js')(sequelize, Sequelize);
 
-// Règles ManyToMany pour les user/roles
-
-db.User.belongsToMany(db.Role, {
-    through: "user_role", foreignKey: 'user_id'
-});
-
-db.Role.belongsToMany(db.User, {
-    through: "user_role", foreignKey: 'role_id'
+// Configuration des relations
+Object.values(db).forEach((model) => {
+	if (model.associate) {
+		model.associate(db);
+	}
 });
 
 db.ROLES = ["user", "admin", "moderator"];

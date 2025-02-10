@@ -29,23 +29,15 @@ db.sequelize = sequelize;
 db.Quizz = require('./Quizz.js')(sequelize, Sequelize);
 db.Question = require('./Question.js')(sequelize, Sequelize);
 db.Answer = require('./Answer.js')(sequelize, Sequelize);
-db.Users = require('./Users.js')(sequelize, Sequelize);
+db.User = require('./User.js')(sequelize, Sequelize);
 db.Role = require('./Role.js')(sequelize, Sequelize);
+db.UserRole = require('./UserRole.js')(sequelize, Sequelize);
 
 // Configuration des relations
 Object.values(db).forEach((model) => {
 	if (model.associate) {
 		model.associate(db);
 	}
-});
-
-
-db.Users.belongsToMany(db.Role, {
-	through: 'user_role', foreignKey: 'user_id',
-});
-
-db.Role.belongsToMany(db.Users, {
-	through: 'user_role', foreignKey: 'role_id',
 });
 
 
@@ -132,13 +124,25 @@ db.Role.belongsToMany(db.Users, {
 
 
 	for (const quizz of quizzData) {
-		await db.Quizz.create(quizz, {
+		await db.Quizz.findOrCreate({
+			where: {},
+			defaults: quizz,
 			include: [{
 				model: db.Question,
 				include: [db.Answer],
 			}],
 		});
 	}
+
+	await db.Role.findOrCreate({
+		where: { role_name: 'user' },
+		defaults: { role_name: 'user' },
+	});
+
+	await db.Role.findOrCreate({
+		where: { role_name: 'admin' },
+		defaults: { role_name: 'admin' },
+	});
 
 	console.log('Données insérées avec succès !');
 })();
