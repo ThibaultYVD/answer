@@ -124,7 +124,9 @@ Object.values(db).forEach((model) => {
 
 
 	for (const quizz of quizzData) {
-		await db.Quizz.create(quizz, {
+		await db.Quizz.findOrCreate({
+			where: {},
+			defaults: quizz,
 			include: [{
 				model: db.Question,
 				include: [db.Answer],
@@ -132,11 +134,14 @@ Object.values(db).forEach((model) => {
 		});
 	}
 
-	await db.Role.create({
-		role_name: 'user',
+	await db.Role.findOrCreate({
+		where: { role_name: 'user' },
+		defaults: { role_name: 'user' },
 	});
-	await db.Role.create({
-		role_name: 'admin',
+
+	await db.Role.findOrCreate({
+		where: { role_name: 'admin' },
+		defaults: { role_name: 'admin' },
 	});
 
 	console.log('Données insérées avec succès !');
