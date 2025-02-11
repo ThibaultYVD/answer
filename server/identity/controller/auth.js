@@ -16,7 +16,7 @@ exports.signup = async (req, res) => {
         }
 
         if (!isPasswordValid(password)) {
-            return res.status(400).json({ 
+            return res.status(400).json({
                 message: "Le mot de passe doit contenir au minimum 8 caractères, une majuscule, une minuscule, un chiffre et un caractère spécial."
             });
         }
@@ -44,7 +44,7 @@ exports.signup = async (req, res) => {
     }
 };
 
-function isPasswordValid(password){
+function isPasswordValid(password) {
     const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
     return passwordRegex.test(password)
 }
@@ -84,7 +84,6 @@ exports.signin = async (req, res) => {
                 }
 
                 req.session.token = token;
-                console.log(req.session)
                 return res.status(200).send({
                     id: user.id,
                     email: user.email,

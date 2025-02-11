@@ -1,6 +1,6 @@
 module.exports = (sequelize, Sequelize) => {
 	const Answer = sequelize.define('Answer', {
-		id: {
+		answer_id: {
 			type: Sequelize.INTEGER,
 			primaryKey: true,
 			autoIncrement: true,
@@ -19,7 +19,7 @@ module.exports = (sequelize, Sequelize) => {
 
 	// Ajout des associations
 	Answer.associate = (models) => {
-		Answer.belongsTo(models.Question, { foreignKey: 'questionId' });
+		Answer.belongsTo(models.Question, { foreignKey: 'question_id' });
 	};
 
 	return Answer;

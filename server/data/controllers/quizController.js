@@ -17,34 +17,34 @@ const getQuizWithDetails = [verifyToken, async (req, res) => {
 	try {
 		const { id } = req.params;
 
-		const quiz = await db.sequelize.query(
+		const quizData = await db.sequelize.query(
 			`SELECT 
-		  q.id AS quizId, 
-		  q.name AS quizName,
-		  qs.id AS questionId,
-		  qs.question AS questionText,
-		  a.id AS answerId,
-		  a.answer AS answerText,
-		  a.isAnswer AS isCorrect
-		FROM quizzes q
-		LEFT JOIN questions qs ON q.id = qs.quizId
-		LEFT JOIN answers a ON qs.id = a.questionId
-		WHERE q.id = :id`,
+				q.quiz_id AS quizId, 
+				q.quiz_name AS quizName,
+				qs.question_id AS questionId,
+				qs.question AS questionText,
+				a.answer_id AS answerId,
+				a.answer AS answerText,
+				a.isAnswer AS isCorrect
+			FROM quizzes q
+			LEFT JOIN questions qs ON q.quiz_id = qs.quiz_id
+			LEFT JOIN answers a ON qs.question_id = a.question_id
+			WHERE q.quiz_id = :id`,
 			{
 				replacements: { id },
 				type: db.Sequelize.QueryTypes.SELECT,
 			},
 		);
 
-		if (!quiz) {
-			return res.status(404).json({ message: 'quiz non trouvé' });
+		if (!quizData || quizData.length === 0) {
+			return res.status(404).json({ message: 'Quiz non trouvé' });
 		}
 
 		const result = {
 			quiz: [],
 		};
 
-		quiz.forEach((item) => {
+		quizData.forEach((item) => {
 			const quizIndex = result.quiz.findIndex(q => q.id === item.quizId);
 
 			if (quizIndex === -1) {
@@ -73,23 +73,25 @@ const getQuizWithDetails = [verifyToken, async (req, res) => {
 		});
 
 		res.status(200).json(result);
-
 	}
 	catch (error) {
 		console.error('Erreur lors de la récupération du quiz :', error);
 		res.status(500).json({ message: 'Erreur interne', error });
 	}
-},
-];
+}];
 
-const saveQuizResponse = [verifyToken, async (req, res) => {
+const saveQuizStatistics = [verifyToken, async (req, res) => {
 	try {
 		const user_id = req.userId;
 
-		// Get quiz responses from the request body
 		const { quiz_id, right_answers, wrong_answers } = req.body;
 
-		// Insert the result into the CompletedQuizes table
+		const quiz = await db.Quiz.findOne({ where: { quiz_id } });
+
+		if (!quiz) {
+			return res.status(404).json({ error: 'Quiz non trouvé.' });
+		}
+
 		const result = await db.CompletedQuizes.create({
 			quiz_id,
 			user_id,
@@ -142,4 +144,4 @@ const getQuizStatistics = [verifyToken, async (req, res) => {
 }];
 
 
-module.exports = { getAllQuiz, getQuizWithDetails, saveQuizResponse, getQuizStatistics };
+module.exports = { getAllQuiz, getQuizWithDetails, saveQuizStatistics, getQuizStatistics };
