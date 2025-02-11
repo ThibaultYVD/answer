@@ -1,12 +1,11 @@
 const jwt = require('jsonwebtoken');
 
 const db = require('../models/Models');
-const User = db.Users;
+const User = db.User;
 
 verifyToken = (req, res, next) => {
 	try {
 		let token;
-		console.log(req.session);
 		if (req.session && req.session.token) {
 			token = req.session.token;
 		}

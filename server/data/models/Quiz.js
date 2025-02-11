@@ -11,15 +11,12 @@ module.exports = (sequelize, Sequelize) => {
 		},
 
 	},
-	{
-		tableName: 'quizzes',
-	},
 	);
 
 	// Ajout des associations
 	Quiz.associate = (models) => {
 
-		Quiz.hasMany(models.Question, { foreignKey: 'quizId', onDelete: 'CASCADE' });
+		Quiz.hasMany(models.Question, { foreignKey: 'quiz_id', onDelete: 'CASCADE' });
 
 		Quiz.belongsToMany(models.User, {
 			through: models.CompletedQuizes,

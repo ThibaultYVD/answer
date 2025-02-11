@@ -1,6 +1,6 @@
 module.exports = (sequelize, Sequelize) => {
 	const Question = sequelize.define('Question', {
-		id: {
+		question_id: {
 			type: Sequelize.INTEGER,
 			primaryKey: true,
 			autoIncrement: true,
@@ -15,8 +15,8 @@ module.exports = (sequelize, Sequelize) => {
 
 	// Ajout des associations
 	Question.associate = (models) => {
-		Question.belongsTo(models.Quiz, { foreignKey: 'quizId' });
-		Question.hasMany(models.Answer, { foreignKey: 'questionId', onDelete: 'CASCADE' });
+		Question.belongsTo(models.Quiz, { foreignKey: 'quiz_id' });
+		Question.hasMany(models.Answer, { foreignKey: 'question_id', onDelete: 'CASCADE' });
 	};
 
 	return Question;
