@@ -1,5 +1,6 @@
-import React, { useEffect, useState } from "react";
-import Proposal from "@components/quizz/Proposal";
+import React, { useEffect, useState, useCallback } from "react";
+import Question from "@components/quizz/Question";
+import { motion } from "framer-motion";
 
 interface Question {
   questionText: string;
@@ -11,111 +12,173 @@ const Page = () => {
   const [questions, setQuestions] = useState<Question[]>([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [timeLeft, setTimeLeft] = useState(30);
+  const [timeNextQuestion, setTimeNextQuestion] = useState(5);
   const [showAnswer, setShowAnswer] = useState(false);
   const [hasStarted, setHasStarted] = useState(false);
+  const [score, setScore] = useState(0);
+  const [isTransitioning, setIsTransitioning] = useState(false);
 
   useEffect(() => {
     const fetchQuestions = async () => {
-      const response = await fetch("/api/quizz/[id]");
-      // const data = await response.json();
-
-      // Data for testing
-      const data = {
-        questions: [
-          {
-            questionText: "Quelle est la capitale de la France ?",
-            choices: ["Paris", "Londres", "Berlin", "Madrid"],
-            correctAnswer: "Paris",
-          },
-          {
-            questionText: "Quelle est la capitale de l'Espagne ?",
-            choices: ["Paris", "Londres", "Berlin", "Madrid"],
-            correctAnswer: "Madrid",
-          },
-          {
-            questionText: "Quelle est la capitale de l'Allemagne ?",
-            choices: ["Paris", "Londres", "Berlin", "Madrid"],
-            correctAnswer: "Berlin",
-          },
-        ],
-      };
-      setQuestions(data.questions);
+      try {
+        const response = await fetch("/api/quizz/[id]");
+        const data = {
+          questions: [
+            {
+              questionText: "Quelle est la capitale de la France ?",
+              choices: ["Paris", "Londres", "Berlin", "Madrid"],
+              correctAnswer: "Paris",
+            },
+            {
+              questionText: "Quelle est la capitale de l'Espagne ?",
+              choices: ["Paris", "Londres", "Berlin", "Madrid"],
+              correctAnswer: "Madrid",
+            },
+            {
+              questionText: "Quelle est la capitale de l'Allemagne ?",
+              choices: ["Paris", "Londres", "Berlin", "Madrid"],
+              correctAnswer: "Berlin",
+            },
+            {
+              questionText: "Quelle est la capitale de la France ?",
+              choices: ["Paris", "Londres", "Berlin", "Madrid"],
+              correctAnswer: "Paris",
+            },
+            {
+              questionText: "Quelle est la capitale de l'Espagne ?",
+              choices: ["Paris", "Londres", "Berlin", "Madrid"],
+              correctAnswer: "Madrid",
+            },
+            {
+              questionText: "Quelle est la capitale de l'Allemagne ?",
+              choices: ["Paris", "Londres", "Berlin", "Madrid"],
+              correctAnswer: "Berlin",
+            },
+          ],
+        };
+        setQuestions(data.questions);
+      } catch (error) {
+        console.error("Erreur lors du chargement des questions:", error);
+      }
     };
 
     fetchQuestions();
   }, []);
 
-  useEffect(() => {
-    if (hasStarted && timeLeft === 0) {
-      setShowAnswer(true);
-      setTimeout(() => {
-        setShowAnswer(false);
-        setCurrentQuestionIndex((prevIndex) => prevIndex + 1);
-        setTimeLeft(30);
-      }, 5000);
-    }
+  const goToNextQuestion = useCallback(() => {
+    setShowAnswer(false);
+    setCurrentQuestionIndex(prev => prev + 1);
+    setTimeLeft(30);
+    setTimeNextQuestion(5);
+  }, []);
 
-    if (hasStarted && !showAnswer) {
-      const timer = setInterval(() => {
-        setTimeLeft((prevTime) => (prevTime > 0 ? prevTime - 1 : 0));
-      }, 1000);
+  const startNextQuestionTimer = useCallback(() => {
+    let remainingTime = 5;
+    const updateTimer = () => {
+      remainingTime -= 1;
+      setTimeNextQuestion(remainingTime);
+      
+      if (remainingTime > 0) {
+        setTimeout(updateTimer, 1000);
+      } else {
+        goToNextQuestion();
+      }
+    };
+    
+    setTimeout(updateTimer, 1000);
+  }, [goToNextQuestion]);
 
-      return () => clearInterval(timer);
-    }
-  }, [timeLeft, showAnswer, hasStarted]);
-
-  if (currentQuestionIndex >= questions.length) {
-    return <div>Quizz terminé</div>;
-  }
-
-  const currentQuestion = questions[currentQuestionIndex];
-
-  const handleChoiceClick = (choice: string) => {
+  const handleTimeUp = useCallback(() => {
     if (!showAnswer) {
       setShowAnswer(true);
       setTimeLeft(0);
-      setTimeout(() => {
-        setShowAnswer(false);
-        setCurrentQuestionIndex((prevIndex) => prevIndex + 1);
-        setTimeLeft(30);
-      }, 5000);
+      startNextQuestionTimer();
     }
-  };
+  }, [showAnswer, startNextQuestionTimer]);
 
-  const handleStartClick = () => {
-    setHasStarted(true);
-  };
+  useEffect(() => {
+    let timeoutId: NodeJS.Timeout;
+
+    if (hasStarted && !showAnswer && timeLeft > 0) {
+      timeoutId = setTimeout(() => {
+        setTimeLeft(prev => {
+          if (prev <= 1) {
+            handleTimeUp();
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    }
+
+    return () => {
+      if (timeoutId) clearTimeout(timeoutId);
+    };
+  }, [timeLeft, hasStarted, showAnswer, handleTimeUp]);
+
+  const handleChoiceClick = useCallback((choice: string) => {
+    if (!showAnswer) {
+      if (choice === questions[currentQuestionIndex].correctAnswer) {
+        setScore(prev => prev + Math.ceil(timeLeft / 3));
+      }
+      setShowAnswer(true);
+      setTimeLeft(0);
+      startNextQuestionTimer();
+    }
+  }, [questions, currentQuestionIndex, timeLeft, showAnswer, startNextQuestionTimer]);
+
+  if (currentQuestionIndex >= questions.length) {
+    return (
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        className="container mx-auto p-4 text-center"
+      >
+        <h2 className="text-4xl font-bold mb-6">Quizz terminé!</h2>
+        <p className="text-2xl mb-4">Score final: {score} points</p>
+        <button
+          onClick={() => window.location.reload()}
+          className="px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+        >
+          Rejouer
+        </button>
+      </motion.div>
+    );
+  }
 
   return (
-    <div className="container mx-auto p-4">
-      <h1 className="text-3xl font-bold mb-6 text-center">Quizz</h1>
-      {!hasStarted ? (
-        <div className="text-center">
-          <button
-            onClick={handleStartClick}
-            className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
+    <div className="p-4">
+      <div className="max-w-4xl mx-auto">
+        <h1 className="text-4xl font-bold mb-8 text-center text-blue-600">
+          Quiz Challenge
+        </h1>
+
+        {!hasStarted ? (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="text-center"
           >
-            Start
-          </button>
-        </div>
-      ) : (
-        <>
-          <div className="mb-6">
-            <h2 className="text-2xl font-semibold mb-4">
-              {currentQuestion.questionText}
-            </h2>
-            <Proposal
-              choices={currentQuestion.choices}
-              correctAnswer={currentQuestion.correctAnswer}
-              showAnswer={showAnswer}
-              onChoiceClick={handleChoiceClick}
-            />
-          </div>
-          <div className="text-center text-lg font-semibold">
-            Temps restant: {timeLeft} secondes
-          </div>
-        </>
-      )}
+            <h2 className="text-2xl mb-6">Prêt à commencer le quiz ?</h2>
+            <button
+              onClick={() => setHasStarted(true)}
+              className="px-8 py-4 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-full hover:shadow-lg transform hover:scale-105 transition-all duration-300"
+            >
+              Commencer
+            </button>
+          </motion.div>
+        ) : (
+          <Question
+            questions={questions}
+            currentQuestionIndex={currentQuestionIndex}
+            score={score}
+            showAnswer={showAnswer}
+            timeLeft={timeLeft}
+            timeNextQuestion={timeNextQuestion}
+            handleChoiceClick={handleChoiceClick}
+          />
+        )}
+      </div>
     </div>
   );
 };

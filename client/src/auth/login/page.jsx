@@ -1,39 +1,34 @@
-import React, { useState } from 'react';
-import Button from '@components/ui/Button';
+import React, { useState } from "react";
+import Button from "@components/ui/Button";
+import axios from "axios";
 
 const LoginPage = () => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError('');
+    setError("");
 
     if (!email || !password) {
-      setError('Veuillez remplir tous les champs.');
+      setError("Veuillez remplir tous les champs.");
       return;
     }
 
     try {
-      const response = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email, password }),
-      });
+      const response = await axios.post(
+        "http://localhost:3002/api/auth/signin",
+        {
+          email,
+          password,
+        }
+      );
 
-      if (!response.ok) {
-        throw new Error('Échec de la connexion');
-      }
-
-      const data = await response.json();
-
-      localStorage.setItem('token', data.token);
-      window.location.href = '/';
+      localStorage.setItem("token", response.data.token);
+      window.location.href = "/quizz";
     } catch (err) {
-      setError(err.message);
+      setError(err.response?.data?.message || "Échec de la connexion");
     }
   };
 
@@ -43,7 +38,9 @@ const LoginPage = () => {
       <form onSubmit={handleSubmit} className="max-w-md mx-auto">
         {error && <div className="mb-4 text-red-500">{error}</div>}
         <div className="mb-4">
-          <label className="block text-gray-700 text-lg font-semibold mb-2">Email</label>
+          <label className="block text-gray-700 text-lg font-semibold mb-2">
+            Email
+          </label>
           <input
             type="email"
             value={email}
@@ -53,7 +50,9 @@ const LoginPage = () => {
           />
         </div>
         <div className="mb-4">
-          <label className="block text-gray-700 text-lg font-semibold mb-2">Mot de passe</label>
+          <label className="block text-gray-700 text-lg font-semibold mb-2">
+            Mot de passe
+          </label>
           <input
             type="password"
             value={password}

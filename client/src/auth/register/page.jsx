@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import Button from '@components/ui/Button';
+import axios from 'axios';
 
 const RegisterPage = () => {
   const [firstName, setFirstName] = useState('');
@@ -26,23 +27,17 @@ const RegisterPage = () => {
     }
 
     try {
-      const response = await fetch('/api/auth/register', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ first_name: firstName, last_name: lastName, email, password }),
+      const response = await axios.post('http://localhost:3002/api/auth/signup', {
+        first_name: firstName,
+        last_name: lastName,
+        email,
+        password,
       });
 
-      if (!response.ok) {
-        throw new Error('Failed to register');
-      }
-
-      const data = await response.json();
-      // Handle successful registration (e.g., redirect to login page)
-      console.log('Registration successful', data);
+      console.log('Registration successful', response.data);
+      window.location.href = '/auth/login';
     } catch (err) {
-      setError(err.message);
+      setError(err.response?.data?.message || 'Échec de l\'inscription');
     }
   };
 
@@ -104,7 +99,7 @@ const RegisterPage = () => {
         <div className="text-center">
           <Button
             type="submit"
-            extraClass="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 w-full"
+            extraClass="pointer px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 w-full"
           >
             S'inscrire
           </Button>
