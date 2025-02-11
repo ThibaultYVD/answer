@@ -24,7 +24,7 @@ const RegisterPage = () => {
       ...prev,
       [name]: value
     }));
-    setError(''); // Clear error when user types
+    setError('');
   };
 
   const validatePassword = (password) => {
@@ -39,7 +39,6 @@ const RegisterPage = () => {
 
     const { firstName, lastName, email, password, confirmPassword } = formData;
 
-    // Validation
     if (!validatePassword(password)) {
       setError('Le mot de passe doit contenir au moins 12 caractères, une majuscule, une minuscule, un chiffre et un caractère spécial.');
       setIsLoading(false);

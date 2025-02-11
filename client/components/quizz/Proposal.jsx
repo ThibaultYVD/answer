@@ -2,6 +2,8 @@ import React from "react";
 import { motion } from "framer-motion";
 
 const Proposal = ({ choices, correctAnswer, showAnswer, onChoiceClick }) => {
+  if (!choices || !Array.isArray(choices)) return null;
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
       {choices.map((choice, index) => (

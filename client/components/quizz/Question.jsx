@@ -3,14 +3,17 @@ import { motion, AnimatePresence } from 'framer-motion';
 import Proposal from '@components/quizz/Proposal';
 
 const Question = ({
-  questions,
+  question,
   currentQuestionIndex,
+  totalQuestions,
   score,
   showAnswer,
   timeLeft,
   timeNextQuestion,
   handleChoiceClick,
 }) => {
+  if (!question) return null;
+
   return (
     <AnimatePresence mode="wait">
       <motion.div
@@ -22,18 +25,18 @@ const Question = ({
       >
         <div className="flex justify-between items-center mb-4">
           <span className="text-lg font-semibold">
-            Question {currentQuestionIndex + 1}/{questions.length}
+            Question {currentQuestionIndex + 1}/{totalQuestions}
           </span>
           <span className="text-lg font-semibold">Score: {score}</span>
         </div>
 
         <div className="mb-6">
           <h2 className="text-2xl font-semibold mb-6">
-            {questions[currentQuestionIndex].questionText}
+            {question.questionText}
           </h2>
           <Proposal
-            choices={questions[currentQuestionIndex].choices}
-            correctAnswer={questions[currentQuestionIndex].correctAnswer}
+            choices={question.choices}
+            correctAnswer={question.correctAnswer}
             showAnswer={showAnswer}
             onChoiceClick={handleChoiceClick}
           />

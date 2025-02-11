@@ -8,49 +8,52 @@ import CreateQuizzPage from "@/quizz/create/page";
 import EditQuizzPage from "@/quizz/edit/page";
 import QuizzListPage from "@/quizz/page";
 import { ProtectedRoute } from "@components/layout/ProtectedRoute";
+import { AuthProvider } from "@contexts/AuthContext";
 
 function App() {
   return (
     <Router>
-      <Layout>
-        <Routes>
-          <Route path="/auth/register" element={<AuthRegister />} />
-          <Route path="/auth/login" element={<AuthLogin />} />
-          <Route path="/" element={<Home />} />
-          <Route
-            path="/quizz"
-            element={
-              <ProtectedRoute>
-                <QuizzListPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/quizz/:id"
-            element={
-              <ProtectedRoute>
-                <QuizzDetailPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/quizz/create"
-            element={
-              <ProtectedRoute>
-                <CreateQuizzPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/quizz/:id/edit"
-            element={
-              <ProtectedRoute>
-                <EditQuizzPage />
-              </ProtectedRoute>
-            }
-          />
-        </Routes>
-      </Layout>
+      <AuthProvider>
+        <Layout>
+          <Routes>
+            <Route path="/auth/register" element={<AuthRegister />} />
+            <Route path="/auth/login" element={<AuthLogin />} />
+            <Route path="/" element={<Home />} />
+            <Route
+              path="/quizz"
+              element={
+                <ProtectedRoute>
+                  <QuizzListPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/quizz/:id"
+              element={
+                <ProtectedRoute>
+                  <QuizzDetailPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/quizz/create"
+              element={
+                <ProtectedRoute>
+                  <CreateQuizzPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/quizz/:id/edit"
+              element={
+                <ProtectedRoute>
+                  <EditQuizzPage />
+                </ProtectedRoute>
+              }
+            />
+          </Routes>
+        </Layout>
+      </AuthProvider>
     </Router>
   );
 }

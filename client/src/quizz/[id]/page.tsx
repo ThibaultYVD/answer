@@ -1,69 +1,58 @@
 import React, { useEffect, useState, useCallback } from "react";
 import Question from "@components/quizz/Question";
 import { motion } from "framer-motion";
+import axios from "axios";
 
-interface Question {
-  questionText: string;
-  choices: string[];
-  correctAnswer: string;
-}
+import { useParams } from 'react-router-dom';
 
 const Page = () => {
-  const [questions, setQuestions] = useState<Question[]>([]);
+  const { id } = useParams(); // Utiliser useParams au lieu de props.params
+  const [questions, setQuestions] = useState([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [timeLeft, setTimeLeft] = useState(30);
   const [timeNextQuestion, setTimeNextQuestion] = useState(5);
   const [showAnswer, setShowAnswer] = useState(false);
   const [hasStarted, setHasStarted] = useState(false);
   const [score, setScore] = useState(0);
-  const [isTransitioning, setIsTransitioning] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState("");
 
   useEffect(() => {
     const fetchQuestions = async () => {
       try {
-        const response = await fetch("/api/quizz/[id]");
-        const data = {
-          questions: [
-            {
-              questionText: "Quelle est la capitale de la France ?",
-              choices: ["Paris", "Londres", "Berlin", "Madrid"],
-              correctAnswer: "Paris",
+        setIsLoading(true);
+        const response = await axios.get(
+          `http://localhost:3001/quiz/getQuizWithDetails/${id}`,
+          {
+            headers: {
+              'Content-Type': 'application/json',
             },
-            {
-              questionText: "Quelle est la capitale de l'Espagne ?",
-              choices: ["Paris", "Londres", "Berlin", "Madrid"],
-              correctAnswer: "Madrid",
-            },
-            {
-              questionText: "Quelle est la capitale de l'Allemagne ?",
-              choices: ["Paris", "Londres", "Berlin", "Madrid"],
-              correctAnswer: "Berlin",
-            },
-            {
-              questionText: "Quelle est la capitale de la France ?",
-              choices: ["Paris", "Londres", "Berlin", "Madrid"],
-              correctAnswer: "Paris",
-            },
-            {
-              questionText: "Quelle est la capitale de l'Espagne ?",
-              choices: ["Paris", "Londres", "Berlin", "Madrid"],
-              correctAnswer: "Madrid",
-            },
-            {
-              questionText: "Quelle est la capitale de l'Allemagne ?",
-              choices: ["Paris", "Londres", "Berlin", "Madrid"],
-              correctAnswer: "Berlin",
-            },
-          ],
-        };
-        setQuestions(data.questions);
+          }
+        );
+        
+        if (response.data && response.data.quiz && response.data.quiz[0]) {
+          const formattedQuestions = response.data.quiz[0].questions.map(q => ({
+            questionText: q.question,
+            choices: q.answers.map(a => a.answer),
+            correctAnswer: q.answers.find(a => a.isAnswer)?.answer || ''
+          }));
+          
+          setQuestions(formattedQuestions);
+        } else {
+          setError("Données du quiz non trouvées");
+        }
       } catch (error) {
         console.error("Erreur lors du chargement des questions:", error);
+        setError("Erreur lors du chargement des questions");
+      } finally {
+        setIsLoading(false);
       }
     };
 
-    fetchQuestions();
-  }, []);
+    if (id) {
+      fetchQuestions();
+    }
+  }, [id]);
 
   const goToNextQuestion = useCallback(() => {
     setShowAnswer(false);
@@ -97,7 +86,7 @@ const Page = () => {
   }, [showAnswer, startNextQuestionTimer]);
 
   useEffect(() => {
-    let timeoutId: NodeJS.Timeout;
+    let timeoutId;
 
     if (hasStarted && !showAnswer && timeLeft > 0) {
       timeoutId = setTimeout(() => {
@@ -116,8 +105,8 @@ const Page = () => {
     };
   }, [timeLeft, hasStarted, showAnswer, handleTimeUp]);
 
-  const handleChoiceClick = useCallback((choice: string) => {
-    if (!showAnswer) {
+  const handleChoiceClick = useCallback((choice) => {
+    if (!showAnswer && questions[currentQuestionIndex]) {
       if (choice === questions[currentQuestionIndex].correctAnswer) {
         setScore(prev => prev + Math.ceil(timeLeft / 3));
       }
@@ -126,6 +115,36 @@ const Page = () => {
       startNextQuestionTimer();
     }
   }, [questions, currentQuestionIndex, timeLeft, showAnswer, startNextQuestionTimer]);
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-blue-500"></div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-red-500 text-center">
+          <h2 className="text-2xl font-bold mb-4">Erreur</h2>
+          <p>{error}</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!questions.length) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <h2 className="text-2xl font-bold mb-4">Aucune question trouvée</h2>
+          <p>Ce quiz ne contient pas de questions.</p>
+        </div>
+      </div>
+    );
+  }
 
   if (currentQuestionIndex >= questions.length) {
     return (
@@ -169,8 +188,9 @@ const Page = () => {
           </motion.div>
         ) : (
           <Question
-            questions={questions}
+            question={questions[currentQuestionIndex]}
             currentQuestionIndex={currentQuestionIndex}
+            totalQuestions={questions.length}
             score={score}
             showAnswer={showAnswer}
             timeLeft={timeLeft}
