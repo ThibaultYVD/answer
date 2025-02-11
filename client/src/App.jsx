@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import Layout from "@components/layout/Layout";
 import AuthRegister from "@/auth/register/page";
 import AuthLogin from "@/auth/login/page";
@@ -8,6 +8,7 @@ import CreateQuizzPage from "@/quizz/create/page";
 import EditQuizzPage from "@/quizz/edit/page";
 import QuizzListPage from "@/quizz/page";
 import { ProtectedRoute } from "@components/layout/ProtectedRoute";
+import { PublicRoute }  from "@components/layout/PublicRoute";
 import { AuthProvider } from "@contexts/AuthContext";
 
 function App() {
@@ -16,9 +17,30 @@ function App() {
       <AuthProvider>
         <Layout>
           <Routes>
-            <Route path="/auth/register" element={<AuthRegister />} />
-            <Route path="/auth/login" element={<AuthLogin />} />
-            <Route path="/" element={<Home />} />
+            <Route
+              path="/auth/register"
+              element={
+                <PublicRoute>
+                  <AuthRegister />
+                </PublicRoute>
+              }
+            />
+            <Route
+              path="/auth/login"
+              element={
+                <PublicRoute>
+                  <AuthLogin />
+                </PublicRoute>
+              }
+            />
+            <Route
+              path="/"
+              element={
+                <PublicRoute>
+                  <Home />
+                </PublicRoute>
+              }
+            />
             <Route
               path="/quizz"
               element={
