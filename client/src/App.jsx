@@ -7,7 +7,7 @@ import QuizzDetailPage from "@/quizz/[id]/page";
 import CreateQuizzPage from "@/quizz/create/page";
 import EditQuizzPage from "@/quizz/edit/page";
 import QuizzListPage from "@/quizz/page";
-
+import { ProtectedRoute } from "@components/layout/ProtectedRoute";
 
 function App() {
   return (
@@ -17,10 +17,38 @@ function App() {
           <Route path="/auth/register" element={<AuthRegister />} />
           <Route path="/auth/login" element={<AuthLogin />} />
           <Route path="/" element={<Home />} />
-          <Route path="/quizz" element={<QuizzListPage />} />
-          <Route path="/quizz/:id" element={<QuizzDetailPage />} />
-          <Route path="/quizz/create" element={<CreateQuizzPage />} />
-          <Route path="/quizz/:id/edit" element={<EditQuizzPage />} />
+          <Route
+            path="/quizz"
+            element={
+              <ProtectedRoute>
+                <QuizzListPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/quizz/:id"
+            element={
+              <ProtectedRoute>
+                <QuizzDetailPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/quizz/create"
+            element={
+              <ProtectedRoute>
+                <CreateQuizzPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/quizz/:id/edit"
+            element={
+              <ProtectedRoute>
+                <EditQuizzPage />
+              </ProtectedRoute>
+            }
+          />
         </Routes>
       </Layout>
     </Router>

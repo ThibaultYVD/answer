@@ -1,166 +1,253 @@
 import React, { useState } from "react";
 import Button from '@components/ui/Button';
 import Input from "@components/ui/Input";
+import { motion, AnimatePresence } from "framer-motion";
+
+interface Question {
+  questionText: string;
+  choices: string[];
+  correctAnswer: number;
+}
+
+interface QuizForm {
+  title: string;
+  questions: Question[];
+}
 
 const CreateQuestionPage = () => {
-  const [questions, setQuestions] = useState<
-    { questionText: string; choices: string[]; correctAnswer: number }[]
-  >([]);
-  const [questionText, setQuestionText] = useState("");
-  const [choices, setChoices] = useState(["", ""]);
-  const [numChoices, setNumChoices] = useState(2);
-  const [correctAnswer, setCorrectAnswer] = useState(0);
+  const [quizForm, setQuizForm] = useState<QuizForm>({
+    title: "",
+    questions: [],
+  });
+  const [currentQuestion, setCurrentQuestion] = useState({
+    questionText: "",
+    choices: ["", ""],
+    correctAnswer: 0,
+  });
+  const [error, setError] = useState<string | null>(null);
+
+  const validateQuestion = (): boolean => {
+    if (currentQuestion.questionText.trim() === "") {
+      setError("La question ne peut pas être vide");
+      return false;
+    }
+    if (currentQuestion.choices.some(choice => choice.trim() === "")) {
+      setError("Tous les choix doivent être remplis");
+      return false;
+    }
+    if (new Set(currentQuestion.choices).size !== currentQuestion.choices.length) {
+      setError("Les choix doivent être uniques");
+      return false;
+    }
+    setError(null);
+    return true;
+  };
 
   const handleAddChoice = () => {
-    if (choices.length < 4) {
-      setChoices([...choices, ""]);
-      setNumChoices(numChoices + 1);
+    if (currentQuestion.choices.length < 4) {
+      setCurrentQuestion(prev => ({
+        ...prev,
+        choices: [...prev.choices, ""],
+      }));
     }
   };
 
   const handleRemoveChoice = () => {
-    if (choices.length > 2) {
-      setChoices(choices.slice(0, -1));
-      setNumChoices(numChoices - 1);
+    if (currentQuestion.choices.length > 2) {
+      setCurrentQuestion(prev => ({
+        ...prev,
+        choices: prev.choices.slice(0, -1),
+        correctAnswer: prev.correctAnswer >= prev.choices.length - 1 
+          ? prev.choices.length - 2 
+          : prev.correctAnswer,
+      }));
     }
   };
 
-  const handleChoiceChange = (index, value) => {
-    const newChoices = [...choices];
-    newChoices[index] = value;
-    setChoices(newChoices);
+  const handleChoiceChange = (index: number, value: string) => {
+    setCurrentQuestion(prev => ({
+      ...prev,
+      choices: prev.choices.map((choice, i) => i === index ? value : choice),
+    }));
   };
 
   const handleAddQuestion = () => {
-    if (
-      questionText.trim() === "" ||
-      choices.some((choice) => choice.trim() === "")
-    ) {
-      alert("Veuillez remplir la question et toutes les propositions.");
-      return;
-    }
-    setQuestions([...questions, { questionText, choices, correctAnswer }]);
-    setQuestionText("");
-    setChoices(["", ""]);
-    setNumChoices(2);
-    setCorrectAnswer(0);
+    if (!validateQuestion()) return;
+
+    setQuizForm(prev => ({
+      ...prev,
+      questions: [...prev.questions, currentQuestion],
+    }));
+    setCurrentQuestion({
+      questionText: "",
+      choices: ["", ""],
+      correctAnswer: 0,
+    });
   };
 
-  const submitQuizz = async () => {
-    if (questions.length === 0) {
-      alert("Veuillez ajouter au moins une question.");
+  const handleRemoveQuestion = (index: number) => {
+    setQuizForm(prev => ({
+      ...prev,
+      questions: prev.questions.filter((_, i) => i !== index),
+    }));
+  };
+
+  const submitQuiz = async () => {
+    if (quizForm.title.trim() === "") {
+      setError("Le titre du quiz ne peut pas être vide");
       return;
     }
-    alert("Quizz créé avec succès");
-    console.log(questions);
-  }
+    if (quizForm.questions.length === 0) {
+      setError("Le quiz doit contenir au moins une question");
+      return;
+    }
+
+    try {
+      // Simulation d'une requête API
+      console.log("Quiz soumis:", quizForm);
+      setError(null);
+      // Réinitialiser le formulaire après soumission
+      setQuizForm({ title: "", questions: [] });
+      alert("Quiz créé avec succès!");
+    } catch (err) {
+      setError("Erreur lors de la création du quiz");
+    }
+  };
 
   return (
-    <div className="container mx-auto p-4">
-      <Input 
-        placeholder="Nom du quizz"
-        extraClass="mb-6"
-      />
-      <div className="mb-6">
-        <label className="block text-gray-700 text-lg font-semibold mb-2">
-          Question:
-        </label>
-        <input
-          type="text"
-          value={questionText}
-          onChange={(e) => setQuestionText(e.target.value)}
-          className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-        />
-      </div>
-      <div className="mb-6">
-        {choices.map((choice, index) => (
-          <div key={index} className="mb-4 flex items-center">
-            <span
-              onClick={() => setCorrectAnswer(index)}
-              className="mr-2 cursor-pointer"
-            >
-              {correctAnswer === index ? "✔" : "✖"}
-            </span>
-            <label className="block text-gray-700 text-lg font-semibold mr-2">
-              Choix {index + 1}:
-            </label>
-            <input
-              type="text"
-              value={choice}
-              onChange={(e) => handleChoiceChange(index, e.target.value)}
-              className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-            />
-          </div>
-        ))}
-      </div>
-      <div className="mb-6 flex">
-        <Button
-          onClick={handleAddChoice}
-          disabled={numChoices >= 4}
-          extraClass="mr-2 px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 disabled:opacity-50"
-        >
-          Ajouter un choix
-        </Button>
-        <Button
-          onClick={handleRemoveChoice}
-          disabled={numChoices <= 2}
-          extraClass="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 disabled:opacity-50"
-        >
-          Supprimer un choix
-        </Button>
-      </div>
-      <div className="mb-6">
-        <Button
-          onClick={handleAddQuestion}
-          extraClass="px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600"
-        >
-          Ajouter la question
-        </Button>
-      </div>
-      <h2 className="text-2xl font-bold mb-4">Questions</h2>
-      <div className="overflow-x-auto">
-        <table className="min-w-full bg-white">
-          <thead>
-            <tr>
-              <th className="py-2 px-4 border-b border-gray-200 bg-gray-100 text-left text-sm leading-4 text-gray-600 uppercase tracking-wider">
-                Question
-              </th>
-              <th className="py-2 px-4 border-b border-gray-200 bg-gray-100 text-left text-sm leading-4 text-gray-600 uppercase tracking-wider">
-                Choix
-              </th>
-              <th className="py-2 px-4 border-b border-gray-200 bg-gray-100 text-left text-sm leading-4 text-gray-600 uppercase tracking-wider">
-                Réponse correcte
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            {questions.map((q, index) => (
-              <tr key={index}>
-                <td className="py-2 px-4 border-b border-gray-200 text-gray-600 font-semibold">
-                  {q.questionText}
-                </td>
-                <td className="py-2 px-4 border-b border-gray-200">
-                  <ul className="list-decimal pl-5 text-gray-600">
-                    {q.choices.map((choice, i) => (
-                      <li key={i}>{choice}</li>
-                    ))}
-                  </ul>
-                </td>
-                <td className="py-2 px-4 border-b border-gray-200 text-gray-600 font-semibold">
-                  {q.choices[q.correctAnswer]}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-
-      <Button 
-      onClick={submitQuizz}
-      extraClass="mt-6 px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
+    <div className="container mx-auto p-4 max-w-4xl">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="bg-white rounded-lg shadow-lg p-6"
       >
-        Créer le quizz
-      </Button>
+        <h1 className="text-3xl font-bold mb-8 text-center text-gray-800">
+          Créer un nouveau quiz
+        </h1>
+
+        {error && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="mb-4 p-3 bg-red-100 text-red-700 rounded-md"
+          >
+            {error}
+          </motion.div>
+        )}
+
+        <Input 
+          placeholder="Titre du quiz"
+          value={quizForm.title}
+          onChange={(e) => setQuizForm(prev => ({ ...prev, title: e.target.value }))}
+          extraClass="mb-8"
+        />
+
+        <div className="bg-gray-50 p-6 rounded-lg mb-8">
+          <h2 className="text-xl font-semibold mb-4">Nouvelle question</h2>
+          
+          <Input
+            placeholder="Question"
+            value={currentQuestion.questionText}
+            onChange={(e) => setCurrentQuestion(prev => ({ ...prev, questionText: e.target.value }))}
+            extraClass="mb-4"
+          />
+
+          <AnimatePresence>
+            {currentQuestion.choices.map((choice, index) => (
+              <motion.div
+                key={index}
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: 20 }}
+                className="flex items-center mb-3"
+              >
+                <button
+                  onClick={() => setCurrentQuestion(prev => ({ ...prev, correctAnswer: index }))}
+                  className={`w-6 h-6 mr-3 rounded-full flex items-center justify-center ${
+                    currentQuestion.correctAnswer === index
+                      ? 'bg-green-500 text-white'
+                      : 'bg-gray-200'
+                  }`}
+                >
+                  ✓
+                </button>
+                <Input
+                  placeholder={`Choix ${index + 1}`}
+                  value={choice}
+                  onChange={(e) => handleChoiceChange(index, e.target.value)}
+                  extraClass="flex-1"
+                />
+              </motion.div>
+            ))}
+          </AnimatePresence>
+
+          <div className="flex gap-2 mt-4">
+            <Button
+              onClick={handleAddChoice}
+              disabled={currentQuestion.choices.length >= 4}
+              extraClass="flex-1 bg-blue-500 hover:bg-blue-600 transition-colors cursor-pointer text-white border-blue-500"
+            >
+              Ajouter un choix
+            </Button>
+            <Button
+              onClick={handleRemoveChoice}
+              disabled={currentQuestion.choices.length <= 2}
+              extraClass="flex-1 bg-red-500 hover:bg-red-600 transition-colors cursor-pointer text-white border-red-500"
+              variant="danger"
+            >
+              Supprimer un choix
+            </Button>
+          </div>
+
+          <Button
+            onClick={handleAddQuestion}
+            extraClass="w-full mt-4 bg-green-500 hover:bg-green-600 transition-colors cursor-pointer text-white"
+            variant="success"
+          >
+            Ajouter la question
+          </Button>
+        </div>
+
+        <div className="mb-8">
+          <h2 className="text-xl font-semibold mb-4">Questions ({quizForm.questions.length})</h2>
+          <div className="space-y-4">
+            {quizForm.questions.map((question, index) => (
+              <motion.div
+                key={index}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="bg-white border rounded-lg p-4"
+              >
+                <div className="flex justify-between items-start mb-2">
+                  <h3 className="font-semibold">{question.questionText}</h3>
+                  <Button
+                    onClick={() => handleRemoveQuestion(index)}
+                    className="text-red-500 hover:text-red-700 transition-colors font-bold text-xl cursor-pointer"
+                  >
+                    ×
+                  </Button>
+                </div>
+                <ul className="list-disc pl-5 space-y-1">
+                  {question.choices.map((choice, i) => (
+                    <li key={i} className={i === question.correctAnswer ? 'text-green-600 font-semibold' : ''}>
+                      {choice}
+                    </li>
+                  ))}
+                </ul>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+
+        <Button
+          onClick={submitQuiz}
+          extraClass="w-full mt-4 bg-blue-500 hover:bg-blue-600 transition-colors cursor-pointer text-white border-blue-500"
+          variant="primary"
+          disabled={quizForm.questions.length === 0}
+        >
+          Créer le quiz
+        </Button>
+      </motion.div>
     </div>
   );
 };
