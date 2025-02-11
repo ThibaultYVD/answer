@@ -3,6 +3,7 @@ import Button from '@components/ui/Button';
 import Input from "@components/ui/Input";
 import { motion, AnimatePresence } from "framer-motion";
 import axios from "axios";
+import { useNavigate } from 'react-router-dom';
 
 interface Question {
   questionText: string;
@@ -26,6 +27,7 @@ const CreateQuestionPage = () => {
     correctAnswer: 0,
   });
   const [error, setError] = useState<string | null>(null);
+  const navigate = useNavigate();
 
   const validateQuestion = (): boolean => {
     if (currentQuestion.questionText.trim() === "") {
@@ -43,6 +45,18 @@ const CreateQuestionPage = () => {
     setError(null);
     return true;
   };
+
+  const validateQuiz = (): boolean => {
+    if (quizForm.title.trim() === "") {
+      setError("Le titre du quiz ne peut pas être vide");
+      return false;
+    }
+    if (quizForm.questions.length === 0) {
+      setError("Le quiz doit contenir au moins une question");
+      return false;
+    }
+    return true;
+  }
 
   const handleAddChoice = () => {
     if (currentQuestion.choices.length < 4) {
@@ -107,14 +121,7 @@ const CreateQuestionPage = () => {
   };
 
   const submitQuiz = async () => {
-    if (quizForm.title.trim() === "") {
-      setError("Le titre du quiz ne peut pas être vide");
-      return;
-    }
-    if (quizForm.questions.length === 0) {
-      setError("Le quiz doit contenir au moins une question");
-      return;
-    }
+    if (!validateQuiz()) return;
 
     try {
       const formattedData = formatQuizData(quizForm);
@@ -127,7 +134,7 @@ const CreateQuestionPage = () => {
       if (response.status === 201 || response.status === 200) {
         setError(null);
         setQuizForm({ title: "", questions: [] });
-        alert("Quiz créé avec succès!");
+        navigate("/quizz")
       } else {
         throw new Error("Erreur lors de la création du quiz");
       }
@@ -264,7 +271,9 @@ const CreateQuestionPage = () => {
 
         <Button
           onClick={submitQuiz}
-          extraClass="w-full mt-4 bg-blue-500 hover:bg-blue-600 transition-colors cursor-pointer text-white border-blue-500"
+          extraClass={`w-full mt-4 transition-colors cursor-pointer text-white border-blue-500 ${
+            quizForm.questions.length === 0 ? 'bg-gray-400 cursor-not-allowed' : 'bg-blue-500 hover:bg-blue-600'
+          }`}
           variant="primary"
           disabled={quizForm.questions.length === 0}
         >
