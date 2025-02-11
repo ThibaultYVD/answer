@@ -9,7 +9,7 @@ module.exports = (sequelize, Sequelize) => {
 			},
 			onDelete: 'CASCADE',
 		},
-		user_id: {
+		role_id: {
 			type: Sequelize.INTEGER,
 			primaryKey: true,
 			references: {
