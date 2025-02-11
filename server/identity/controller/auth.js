@@ -64,24 +64,26 @@ exports.signin = async (req, res) => {
         bcrypt.compare(req.body.password, user.password, async function (err, result) {
             if (err) {
                 console.error('Erreur lors de la comparaison :', err);
-                return;
+                return res.status(500).send({ message: "Erreur interne." });
             }
+
             if (result) {
-                const payload = {
-                    id: user.user_id
+                let authorities = [];
+                const roles = await user.getRoles();
+
+                for (let i = 0; i < roles.length; i++) {
+                    authorities.push(roles[i].role_name);
                 }
+
+                const payload = {
+                    id: user.user_id,
+                    roles: authorities
+                };
 
                 const token = jwt.sign(payload, process.env.SECRET_KEY, {
                     algorithm: 'HS256',
                     expiresIn: '1d'
                 });
-
-
-                let authorities = [];
-                const roles = await user.getRoles();
-                for (let i = 0; i < roles.length; i++) {
-                    authorities.push(roles[i].role_name);
-                }
 
                 req.session.token = token;
                 return res.status(200).send({
@@ -91,13 +93,10 @@ exports.signin = async (req, res) => {
                     token: token
                 });
 
-
             } else {
-                res.status(403).json({ message: "Mot de passe invalide" });
+                return res.status(403).json({ message: "Mot de passe invalide" });
             }
         });
-
-
 
     } catch (error) {
         return res.status(500).send({ message: error.message });
