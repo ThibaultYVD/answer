@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import Button from '@components/ui/Button';
 import Input from "@components/ui/Input";
 import { motion, AnimatePresence } from "framer-motion";
+import axios from "axios";
 
 interface Question {
   questionText: string;
@@ -92,6 +93,19 @@ const CreateQuestionPage = () => {
     }));
   };
 
+  const formatQuizData = (formData: QuizForm) => {
+    return {
+      quiz_name: formData.title,
+      questions: formData.questions.map(question => ({
+        question: question.questionText,
+        answers: question.choices.map((choice, index) => ({
+          answer: choice,
+          isAnswer: index === question.correctAnswer
+        }))
+      }))
+    };
+  };
+
   const submitQuiz = async () => {
     if (quizForm.title.trim() === "") {
       setError("Le titre du quiz ne peut pas être vide");
@@ -103,13 +117,22 @@ const CreateQuestionPage = () => {
     }
 
     try {
-      // Simulation d'une requête API
-      console.log("Quiz soumis:", quizForm);
-      setError(null);
-      // Réinitialiser le formulaire après soumission
-      setQuizForm({ title: "", questions: [] });
-      alert("Quiz créé avec succès!");
+      const formattedData = formatQuizData(quizForm);
+      const response = await axios.post('http://localhost:3001/admin/create', formattedData, {
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      });
+
+      if (response.status === 201 || response.status === 200) {
+        setError(null);
+        setQuizForm({ title: "", questions: [] });
+        alert("Quiz créé avec succès!");
+      } else {
+        throw new Error("Erreur lors de la création du quiz");
+      }
     } catch (err) {
+      console.error("Erreur:", err);
       setError("Erreur lors de la création du quiz");
     }
   };

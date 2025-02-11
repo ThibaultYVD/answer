@@ -9,7 +9,7 @@ import { useAuth } from "@hooks/useAuth";
 
 const Header = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const { isLoggedIn, logout } = useAuth();
+  const { isLoggedIn, isAdmin, logout } = useAuth();
   const navigate = useNavigate();
 
   const handleLogout = () => {
@@ -20,8 +20,8 @@ const Header = () => {
   return (
     <header className="bg-[var(--nexa)] text-white p-4 w-full sticky top-0 z-50 shadow-md">
       <div className="container mx-auto flex justify-between items-center">
-        <Logo />
-        <DesktopNav isLoggedIn={isLoggedIn} onLogout={handleLogout} />
+        <Logo isLoggedIn={isLoggedIn} />
+        <DesktopNav isLoggedIn={isLoggedIn} isAdmin={isAdmin} onLogout={handleLogout} />
 
         <motion.button
           className="md:hidden p-2"

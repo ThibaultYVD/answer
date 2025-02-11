@@ -3,31 +3,33 @@ import { motion } from "framer-motion";
 import { FiHome, FiPlus, FiLogOut, FiUserPlus, FiLogIn } from "react-icons/fi";
 import Button from "@components/ui/Button";
 
-const MobileNav = ({ isLoggedIn, onLogout, onClose }) => (
+const MobileNav = ({ isLoggedIn, isAdmin, onLogout, onClose }) => (
   <motion.div
     className="flex flex-col gap-2"
     variants={{
       open: { transition: { staggerChildren: 0.1 } },
-      closed: { transition: { staggerChildren: 0.05, staggerDirection: -1 } }
+      closed: { transition: { staggerChildren: 0.05, staggerDirection: -1 } },
     }}
   >
     <Link
-      to="/"
+      to={isLoggedIn ? "/quizz" : "/"}
       className="flex items-center gap-2 px-4 py-2 hover:bg-[var(--nexa-dark)] rounded transition-colors"
       onClick={onClose}
     >
       <FiHome /> Accueil
     </Link>
-    
+
     {isLoggedIn ? (
       <>
-        <Link
-          to="/quizz/create"
-          className="flex items-center gap-2 px-4 py-2 hover:bg-[var(--nexa-dark)] rounded transition-colors text-white"
-          onClick={onClose}
-        >
-          <FiPlus /> Créer un Quiz
-        </Link>
+        {isAdmin && (
+          <Link
+            to="/quizz/create"
+            className="flex items-center gap-2 px-4 py-2 hover:bg-[var(--nexa-dark)] rounded transition-colors text-white"
+            onClick={onClose}
+          >
+            <FiPlus /> Créer un Quiz
+          </Link>
+        )}
         <Button
           onClick={() => {
             onLogout();
