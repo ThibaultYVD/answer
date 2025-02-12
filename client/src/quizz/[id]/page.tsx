@@ -2,7 +2,7 @@ import React, { useEffect, useState, useCallback } from "react";
 import Question from "@components/quizz/Question";
 import { motion } from "framer-motion";
 import axios from "axios";
-
+import { useNavigate } from "react-router-dom";
 import { useParams } from 'react-router-dom';
 
 const Page = () => {
@@ -10,12 +10,14 @@ const Page = () => {
   const [questions, setQuestions] = useState([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [timeLeft, setTimeLeft] = useState(30);
-  const [timeNextQuestion, setTimeNextQuestion] = useState(5);
+  const [timeNextQuestion, setTimeNextQuestion] = useState(3);
   const [showAnswer, setShowAnswer] = useState(false);
   const [hasStarted, setHasStarted] = useState(false);
   const [score, setScore] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
+
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchQuestions = async () => {
@@ -58,11 +60,11 @@ const Page = () => {
     setShowAnswer(false);
     setCurrentQuestionIndex(prev => prev + 1);
     setTimeLeft(30);
-    setTimeNextQuestion(5);
+    setTimeNextQuestion(3);
   }, []);
 
   const startNextQuestionTimer = useCallback(() => {
-    let remainingTime = 5;
+    let remainingTime = 3;
     const updateTimer = () => {
       remainingTime -= 1;
       setTimeNextQuestion(remainingTime);
@@ -156,10 +158,12 @@ const Page = () => {
         <h2 className="text-4xl font-bold mb-6">Quizz terminé!</h2>
         <p className="text-2xl mb-4">Score final: {score} points</p>
         <button
-          onClick={() => window.location.reload()}
+          onClick={() => {
+            navigate("/")
+          }}
           className="px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
         >
-          Rejouer
+          Retourner à l'acceuil
         </button>
       </motion.div>
     );
