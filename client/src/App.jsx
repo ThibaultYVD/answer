@@ -1,5 +1,11 @@
-import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+} from "react-router-dom";
 import Layout from "@components/layout/Layout";
+import Admin from "@/admin/page";
 import AuthRegister from "@/auth/register/page";
 import AuthLogin from "@/auth/login/page";
 import Home from "@/home/page";
@@ -9,7 +15,8 @@ import EditQuizzPage from "@/quizz/edit/page";
 import QuizzListPage from "@/quizz/page";
 import Rgpd from "@/rgpd/page";
 import { ProtectedRoute } from "@components/layout/ProtectedRoute";
-import { PublicRoute }  from "@components/layout/PublicRoute";
+import { PublicRoute } from "@components/layout/PublicRoute";
+import { AdminRoute } from "@components/layout/AdminRoute";
 import { AuthProvider } from "@contexts/AuthContext";
 
 function App() {
@@ -71,8 +78,18 @@ function App() {
               path="/quizz/:id/edit"
               element={
                 <ProtectedRoute>
-                  <EditQuizzPage />
+                  <AdminRoute>
+                    <EditQuizzPage />
+                  </AdminRoute>
                 </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin"
+              element={
+                <AdminRoute>
+                  <Admin />
+                </AdminRoute>
               }
             />
           </Routes>

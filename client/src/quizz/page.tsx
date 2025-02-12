@@ -14,8 +14,7 @@ const QuizzPage: React.FC = () => {
   const [quizzes, setQuizzes] = useState<Quiz[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
-  const token = localStorage.getItem('token');
-  const { isAdmin } = useAuth();
+  const { isAdmin, token } = useAuth();
 
   useEffect(() => {
     const fetchQuizzes = async () => {

@@ -6,22 +6,6 @@ import axios from "axios";
 import { useNavigate, useParams } from "react-router-dom";
 import { useAuth } from "@hooks/useAuth";
 
-interface FormattedQuizData {
-  quiz_name: string;
-  questions: FormattedQuestion[];
-}
-
-interface QuizForm {
-  title: string;
-  questions: Question[];
-}
-
-interface CurrentQuestion {
-  questionText: string;
-  choices: string[];
-  correctAnswer: number;
-}
-
 interface Answer {
   answer_id: number | string;
   answer: string;
@@ -52,27 +36,27 @@ interface QuizForm {
   questions: Question[];
 }
 
+interface CurrentQuestion {
+  questionText: string;
+  choices: string[];
+  correctAnswer: number;
+}
+
 const EditQuestionPage: React.FC = () => {
-  const { token, isAdmin } = useAuth();
+  const { token } = useAuth();
   const [quizForm, setQuizForm] = useState<QuizForm>({
     title: "",
     questions: [],
   });
-
   const [currentQuestion, setCurrentQuestion] = useState<CurrentQuestion>({
     questionText: "",
     choices: ["", ""],
     correctAnswer: 0,
   });
-
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const navigate = useNavigate();
   const { id } = useParams();
-
-  if (!isAdmin) {
-    navigate("/");
-  }
 
   useEffect(() => {
     async function fetchQuiz() {
@@ -88,15 +72,32 @@ const EditQuestionPage: React.FC = () => {
 
         if (response.status === 200 && response.data.quiz && response.data.quiz[0]) {
           const quizData = response.data.quiz[0];
-          setQuizForm({
-            title: quizData.name,
-            questions: quizData.questions.map((q) => ({
+          
+          const uniqueQuestions = quizData.questions.map((q) => {
+            const uniqueAnswersMap = new Map();
+            q.answers.forEach((answer) => {
+              if (!uniqueAnswersMap.has(answer.answer)) {
+                uniqueAnswersMap.set(answer.answer, {
+                  answer_id: answer.answer_id,
+                  answer: answer.answer,
+                  isAnswer: answer.isAnswer
+                });
+              }
+            });
+            const uniqueAnswers = Array.from(uniqueAnswersMap.values());
+
+            return {
               id: q.question_id,
               questionText: q.question,
-              choices: q.answers.map((a) => a.answer),
-              correctAnswer: q.answers.findIndex((a) => a.isAnswer),
-              answerIds: q.answers.map((a) => a.answer_id),
-            })),
+              choices: uniqueAnswers.map(a => a.answer),
+              correctAnswer: uniqueAnswers.findIndex(a => a.isAnswer),
+              answerIds: uniqueAnswers.map(a => a.answer_id)
+            };
+          });
+
+          setQuizForm({
+            title: quizData.name,
+            questions: uniqueQuestions
           });
         } else {
           setError("Données du quiz non trouvées");
@@ -109,7 +110,7 @@ const EditQuestionPage: React.FC = () => {
       }
     }
     fetchQuiz();
-  }, [id]);
+  }, [id, token]);
 
   const validateQuestion = (): boolean => {
     if (currentQuestion.questionText.trim() === "") {
@@ -120,9 +121,7 @@ const EditQuestionPage: React.FC = () => {
       setError("Tous les choix doivent être remplis");
       return false;
     }
-    if (
-      new Set(currentQuestion.choices).size !== currentQuestion.choices.length
-    ) {
+    if (new Set(currentQuestion.choices).size !== currentQuestion.choices.length) {
       setError("Les choix doivent être uniques");
       return false;
     }
@@ -173,44 +172,70 @@ const EditQuestionPage: React.FC = () => {
 
   const handleAddQuestion = (): void => {
     if (!validateQuestion()) return;
-
-    setQuizForm((prev) => ({
-      ...prev,
-      questions: [
-        ...prev.questions,
-        {
-          id: prev.questions.length + 1, // or any other logic to generate a unique id
-          questionText: currentQuestion.questionText,
-          choices: currentQuestion.choices,
-          correctAnswer: currentQuestion.correctAnswer,
-          answerIds: currentQuestion.choices.map((_, index) => index), // or any other logic to generate answer ids
-        },
-      ],
-    }));
+  
+    setQuizForm((prev) => {
+      const newQuestionId = prev.questions.length + 1;
+      const baseAnswerId = newQuestionId * 10; // Pour garder les IDs de réponses uniques par question
+  
+      return {
+        ...prev,
+        questions: [
+          ...prev.questions,
+          {
+            id: newQuestionId,
+            questionText: currentQuestion.questionText,
+            choices: currentQuestion.choices,
+            correctAnswer: currentQuestion.correctAnswer,
+            answerIds: currentQuestion.choices.map((_, index) => baseAnswerId + index + 1)
+          }
+        ]
+      };
+    });
+  
     setCurrentQuestion({
       questionText: "",
       choices: ["", ""],
-      correctAnswer: 0,
+      correctAnswer: 0
     });
   };
 
   const handleRemoveQuestion = (index: number): void => {
-    setQuizForm((prev) => ({
-      ...prev,
-      questions: prev.questions.filter((_, i) => i !== index),
-    }));
+    setQuizForm(prev => {
+      // Filtrer la question à supprimer
+      const filteredQuestions = prev.questions.filter((_, i) => i !== index);
+      
+      // Réorganiser les IDs des questions et réponses restantes
+      const updatedQuestions = filteredQuestions.map((question, newIndex) => {
+        const newQuestionId = newIndex + 1;
+        const newAnswerIds = question.choices.map((_, answerIndex) => 
+          (newQuestionId * 10) + answerIndex + 1
+        );
+  
+        return {
+          ...question,
+          id: newQuestionId,
+          answerIds: newAnswerIds
+        };
+      });
+  
+      return {
+        ...prev,
+        questions: updatedQuestions
+      };
+    });
   };
+
 
   const formatQuizData = (formData: QuizForm): FormattedQuizData => {
     return {
       quiz_name: formData.title,
-      questions: formData.questions.map((question, qIndex) => ({
-        question_id: question.id || qIndex + 1,
+      questions: formData.questions.map((question, questionIndex) => ({
+        question_id: questionIndex + 1,  // Générer des IDs séquentiels pour les questions
         question: question.questionText,
-        answers: question.choices.map((choice, index) => ({
-          answer_id: question.answerIds?.[index] || index + 1,
+        answers: question.choices.map((choice, answerIndex) => ({
+          answer_id: (questionIndex * 10) + answerIndex + 1,  // Générer des IDs uniques pour les réponses
           answer: choice,
-          isAnswer: index === question.correctAnswer
+          isAnswer: answerIndex === question.correctAnswer
         }))
       }))
     };
@@ -220,10 +245,7 @@ const EditQuestionPage: React.FC = () => {
     if (!validateQuiz()) return;
 
     try {
-      const token = localStorage.getItem("token");
       const formattedData = formatQuizData(quizForm);
-
-      // Log des données avant envoi pour débuggage
       console.log("Données envoyées:", JSON.stringify(formattedData, null, 2));
 
       const response = await axios.put(
@@ -240,8 +262,6 @@ const EditQuestionPage: React.FC = () => {
       if (response.status === 200) {
         setError(null);
         navigate("/quizz");
-      } else {
-        throw new Error("Erreur lors de la modification du quiz");
       }
     } catch (err) {
       console.error("Erreur complète:", err);

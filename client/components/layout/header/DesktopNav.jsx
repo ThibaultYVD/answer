@@ -24,6 +24,17 @@ const DesktopNav = ({ isLoggedIn, isAdmin, onLogout }) => (
               </NavButton>
             </Link>
           )}
+
+          {isAdmin && (
+            <Link to="/admin">
+              <NavButton>
+                <span className="flex items-center gap-2">
+                  Admin
+                  <FiPlus className="text-lg" />
+                </span>
+              </NavButton>
+            </Link>
+          )}
           <NavButton onClick={onLogout} variant="danger">
             <span className="flex items-center gap-2">
               Se déconnecter
