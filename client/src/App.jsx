@@ -7,6 +7,7 @@ import QuizzDetailPage from "@/quizz/[id]/page";
 import CreateQuizzPage from "@/quizz/create/page";
 import EditQuizzPage from "@/quizz/edit/page";
 import QuizzListPage from "@/quizz/page";
+import Rgpd from "@/rgpd/page";
 import { ProtectedRoute } from "@components/layout/ProtectedRoute";
 import { PublicRoute }  from "@components/layout/PublicRoute";
 import { AuthProvider } from "@contexts/AuthContext";
@@ -17,6 +18,7 @@ function App() {
       <AuthProvider>
         <Layout>
           <Routes>
+            <Route path="/rgpd" element={<Rgpd />} />
             <Route
               path="/auth/register"
               element={
