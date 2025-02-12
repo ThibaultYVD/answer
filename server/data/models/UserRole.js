@@ -2,7 +2,6 @@ module.exports = (sequelize, Sequelize) => {
 	const ProductsLists = sequelize.define('user_role', {
 		user_id: {
 			type: Sequelize.INTEGER,
-			primaryKey: true,
 			references: {
 				model: 'users',
 				key: 'user_id',
@@ -11,7 +10,6 @@ module.exports = (sequelize, Sequelize) => {
 		},
 		role_id: {
 			type: Sequelize.INTEGER,
-			primaryKey: true,
 			references: {
 				model: 'roles',
 				key: 'role_id',
