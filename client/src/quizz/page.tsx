@@ -2,6 +2,8 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import Card from '@components/quizz/Card';
+import { useAuth } from "@hooks/useAuth";
+
 
 interface Quiz {
   quiz_id: number;
@@ -13,6 +15,7 @@ const QuizzPage: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
   const token = localStorage.getItem('token');
+  const { isAdmin } = useAuth();
 
   useEffect(() => {
     const fetchQuizzes = async () => {
@@ -42,6 +45,7 @@ const QuizzPage: React.FC = () => {
       quizzes={quizzes}
       isLoading={isLoading}
       error={error}
+      isAdmin={isAdmin}
     />
   );
 };
