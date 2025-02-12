@@ -30,4 +30,39 @@ const assignRole = [verifyToken, async (req, res) => {
 	}
 }];
 
-module.exports = { assignRole };
+const allUsers = [
+	verifyToken,
+	isAdmin,
+	async (req, res) => {
+		try {
+			const users = await db.User.findAll({
+				include: [
+					{
+						association: 'roles',
+						attributes: ['role_name'],
+					},
+				],
+			});
+
+			const usersWithRoles = users.map(user => ({
+				id: user.id,
+				first_name: user.first_name,
+				last_name: user.last_name,
+				email: user.email,
+				creation_date: user.created_at,
+				roles: user.roles.map(role => role.role_name),
+			}));
+
+			res.status(200).json(usersWithRoles);
+		}
+		catch (error) {
+			console.error('Erreur allUsers :', error);
+			res.status(500).json({ error: 'Erreur lors de la récupération des utilisateurs', details: error.message });
+		}
+	},
+];
+
+module.exports = { allUsers };
+
+
+module.exports = { assignRole, allUsers };
