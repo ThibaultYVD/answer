@@ -40,25 +40,37 @@ const allUsers = [
 	isAdmin,
 	async (req, res) => {
 		try {
-			const users = await db.User.findAll({
-				include: [
-					{
-						association: 'roles',
-						attributes: ['role_name'],
-					},
-				],
-			});
+			const usersWithRoles = await db.sequelize.query(
+				`
+				SELECT u.user_id, u.first_name, u.last_name, u.email, u.created_at, r.role_name
+				FROM users u
+				LEFT JOIN user_roles ur ON u.user_id = ur.user_id
+				LEFT JOIN roles r ON r.role_id = ur.role_id
+				`,
+				{
+					type: db.Sequelize.QueryTypes.SELECT,
+				},
+			);
 
-			const usersWithRoles = users.map(user => ({
-				id: user.user_id,
-				first_name: user.first_name,
-				last_name: user.last_name,
-				email: user.email,
-				creation_date: user.created_at,
-				roles: user.roles.map(role => role.role_name),
-			}));
+			const formattedUsers = usersWithRoles.reduce((acc, user) => {
+				const existingUser = acc.find(u => u.id === user.user_id);
+				if (existingUser) {
+					existingUser.roles.push(user.role_name);
+				}
+				else {
+					acc.push({
+						id: user.user_id,
+						first_name: user.first_name,
+						last_name: user.last_name,
+						email: user.email,
+						creation_date: user.created_at,
+						roles: [user.role_name],
+					});
+				}
+				return acc;
+			}, []);
 
-			res.status(200).json(usersWithRoles);
+			res.status(200).json(formattedUsers);
 		}
 		catch (error) {
 			console.error('Erreur allUsers :', error);
@@ -66,8 +78,5 @@ const allUsers = [
 		}
 	},
 ];
-
-module.exports = { allUsers };
-
 
 module.exports = { assignOrRemoveRole, allUsers };
