@@ -30,6 +30,17 @@ const MobileNav = ({ isLoggedIn, isAdmin, onLogout, onClose }) => (
             <FiPlus /> Créer un Quiz
           </Link>
         )}
+
+        {isAdmin && (
+          <Link
+            to="/admin"
+            className="flex items-center gap-2 px-4 py-2 hover:bg-[var(--nexa-dark)] rounded transition-colors text-white"
+            onClick={onClose}
+          >
+            <FiPlus /> Admin
+          </Link>
+        )}
+
         <Button
           onClick={() => {
             onLogout();

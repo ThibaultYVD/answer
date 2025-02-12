@@ -1,7 +1,24 @@
 import React from "react";
 import { Link } from "react-router-dom";
+import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 const QuizCard = ({ quiz, isAdmin }) => {
+  const navigate = useNavigate();
+  const deleteQuizz = async () => {
+    try {
+      const response = await axios.delete(
+        `http://localhost:3001/admin/delete/${quiz.quiz_id}`
+      );
+
+      if (response.status === 200) {
+        navigate("/");
+      }
+    } catch (err) {
+      console.error("Erreur complète:", err);
+    }
+  };
+
   return (
     <div className="bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
       <div className="p-6 space-y-4">
@@ -49,6 +66,27 @@ const QuizCard = ({ quiz, isAdmin }) => {
                 </svg>
               </button>
             </Link>
+          )}
+          {isAdmin && (
+            <button
+              className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg hover:from-purple-700 hover:to-blue-700 transition-all duration-200 text-sm font-medium"
+              onClick={deleteQuizz}
+            >
+              Supprimer
+              <svg
+                className="ml-2 h-4 w-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M9 5l7 7-7 7"
+                />
+              </svg>
+            </button>
           )}
           <span className="text-sm text-gray-500">Quiz #{quiz.quiz_id}</span>
         </div>
@@ -111,7 +149,9 @@ const Card = ({ quizzes, isLoading, error, isAdmin }) => {
               .fill(null)
               .map((_, index) => <LoadingSkeleton key={index} />)
           ) : quizzes.length > 0 ? (
-            quizzes.map((quiz) => <QuizCard key={quiz.quiz_id} quiz={quiz} isAdmin={isAdmin} />)
+            quizzes.map((quiz) => (
+              <QuizCard key={quiz.quiz_id} quiz={quiz} isAdmin={isAdmin} />
+            ))
           ) : (
             <div className="col-span-full text-center py-12">
               <p className="text-gray-500 text-lg">
