@@ -1,7 +1,7 @@
 const db = require('../models/Models');
 const { verifyToken, isAdmin } = require('../security/authjwt');
 
-const assignRole = [verifyToken, async (req, res) => {
+const assignOrRemoveRole = [verifyToken, async (req, res) => {
 	try {
 		const { user_id, role_name } = req.body;
 
@@ -16,19 +16,24 @@ const assignRole = [verifyToken, async (req, res) => {
 		}
 
 		const existingRole = await db.UserRole.findOne({ where: { user_id, role_id: role.role_id } });
+
 		if (existingRole) {
-			return res.status(400).json({ error: 'L\'utilisateur possède déjà ce rôle.' });
+			// Supprimer le rôle si déjà existant
+			await db.UserRole.destroy({ where: { user_id, role_id: role.role_id } });
+			return res.status(200).json({ message: `Rôle "${role_name}" retiré de l'utilisateur ${user_id}.` });
 		}
-
-		await db.UserRole.create({ user_id, role_id: role.role_id });
-
-		res.status(201).json({ message: `Rôle "${role_name}" attribué à l'utilisateur ${user_id}.` });
+		else {
+			// Ajouter le rôle si non existant
+			await db.UserRole.create({ user_id, role_id: role.role_id });
+			return res.status(201).json({ message: `Rôle "${role_name}" attribué à l'utilisateur ${user_id}.` });
+		}
 	}
 	catch (error) {
-		console.error('Erreur assignRole :', error);
-		res.status(500).json({ error: 'Erreur lors de l\'affectation du rôle.', details: error.message });
+		console.error('Erreur assignOrRemoveRole :', error);
+		res.status(500).json({ error: 'Erreur lors de la gestion du rôle.', details: error.message });
 	}
 }];
+
 
 const allUsers = [
 	verifyToken,
@@ -65,4 +70,4 @@ const allUsers = [
 module.exports = { allUsers };
 
 
-module.exports = { assignRole, allUsers };
+module.exports = { assignOrRemoveRole, allUsers };
