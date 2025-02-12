@@ -36,7 +36,6 @@ exports.signup = async (req, res) => {
             created_at: new Date(),
         });
 
-        user.setRoles([1])
         res.status(200).json({ message: "Utilisateur enregistré avec succès!" });
 
     } catch (error) {
