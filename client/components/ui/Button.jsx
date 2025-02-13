@@ -5,7 +5,22 @@ const Button = ({ onClick, disabled, extraClass, children, ...props }) => {
     <button
       onClick={onClick}
       disabled={disabled}
-      className={`${extraClass} border border-[0.0625rem] border-[var(--button)] bg-[var(--button)] text-black text-center rounded-full flex justify-center items-center p-2 font-montserrat text-xs font-bold leading-[150%] no-underline transition-shadow duration-800`}
+      className={`
+        ${extraClass}
+        bg-gradient-to-r from-blue-500 to-indigo-600 
+        hover:from-blue-600 hover:to-indigo-700
+        text-white
+        rounded-lg
+        flex justify-center items-center
+        px-4 py-2
+        font-medium text-sm
+        shadow-sm hover:shadow-md
+        transform transition-all duration-300
+        hover:-translate-y-0.5 active:translate-y-0
+        active:scale-[0.98]
+        disabled:opacity-50 disabled:cursor-not-allowed
+        disabled:hover:translate-y-0
+      `}
       {...props}
     >
       {children}

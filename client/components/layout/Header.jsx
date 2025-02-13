@@ -18,7 +18,7 @@ const Header = () => {
   };
 
   return (
-    <header className="bg-[var(--nexa)] text-white p-4 w-full sticky top-0 z-50 shadow-md">
+    <header className="bg-gradient-to-r from-blue-700 via-indigo-600 to-purple-700 text-white p-4 w-full sticky top-0 z-50 shadow-lg">
       <div className="container mx-auto flex justify-between items-center">
         <Logo isLoggedIn={isLoggedIn} />
         <DesktopNav isLoggedIn={isLoggedIn} isAdmin={isAdmin} onLogout={handleLogout} />
