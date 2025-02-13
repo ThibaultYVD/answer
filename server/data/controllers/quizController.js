@@ -8,7 +8,7 @@ const getAllQuiz = [verifyToken, async (req, res) => {
 	}
 	catch (error) {
 		console.error('Erreur lors de la récupération des quiz :', error);
-		return res.status(500).json({ message: 'Erreur interne du serveur', error: error.message });
+		return res.status(500).json({ error: 'Erreur interne du serveur', error: error.message });
 	}
 },
 ];
@@ -76,7 +76,7 @@ const getQuizWithDetails = [verifyToken, async (req, res) => {
 	}
 	catch (error) {
 		console.error('Erreur lors de la récupération du quiz :', error);
-		res.status(500).json({ message: 'Erreur interne', error });
+		res.status(500).json({ error: 'Erreur interne', error });
 	}
 }];
 
@@ -102,7 +102,7 @@ const saveQuizStatistics = [verifyToken, async (req, res) => {
 		res.status(201).json({ message: 'Quiz response saved successfully', result });
 	}
 	catch (error) {
-		res.status(500).json({ error: error });
+		res.status(500).json({ error: 'Erreur interne', error });
 	}
 }];
 
@@ -139,7 +139,7 @@ const getQuizStatistics = [verifyToken, async (req, res) => {
 		});
 	}
 	catch (error) {
-		res.status(500).json({ error: error.message });
+		res.status(500).json({ error: 'Erreur interne', error });
 	}
 }];
 

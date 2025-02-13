@@ -124,7 +124,7 @@ exports.signout = async (req, res) => {
     } catch (err) {
         console.error('Erreur interne:', err);
         return res.status(500).json({
-            message: "Erreur interne du serveur."
+            error: "Erreur interne du serveur.", err
         });
     }
 };

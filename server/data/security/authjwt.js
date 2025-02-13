@@ -36,7 +36,7 @@ verifyToken = (req, res, next) => {
 	}
 	catch (error) {
 		console.error('Erreur dans la validation du token:', error);
-		return res.status(500).send({ message: 'Erreur dans la validation du token.' });
+		return res.status(500).send({ error: 'Erreur interne', error });
 	}
 };
 
@@ -61,13 +61,13 @@ isAdmin = async (req, res, next) => {
 		}
 
 		return res.status(403).send({
-			message: 'Vous n\'avez pas le rôle Admin.',
+			error: 'Vous n\'avez pas le rôle Admin.',
 		});
 	}
 	catch (error) {
 		console.log(error);
 		return res.status(500).send({
-			message: 'Erreur dans la validation du rôle utilisateur.',
+			error: 'Erreur dans la validation du rôle utilisateur.',
 		});
 	}
 };

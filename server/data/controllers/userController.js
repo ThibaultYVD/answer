@@ -18,12 +18,10 @@ const assignOrRemoveRole = [verifyToken, async (req, res) => {
 		const existingRole = await db.UserRole.findOne({ where: { user_id, role_id: role.role_id } });
 
 		if (existingRole) {
-			// Supprimer le rôle si déjà existant
 			await db.UserRole.destroy({ where: { user_id, role_id: role.role_id } });
 			return res.status(200).json({ message: `Rôle "${role_name}" retiré de l'utilisateur ${user_id}.` });
 		}
 		else {
-			// Ajouter le rôle si non existant
 			await db.UserRole.create({ user_id, role_id: role.role_id });
 			return res.status(201).json({ message: `Rôle "${role_name}" attribué à l'utilisateur ${user_id}.` });
 		}
