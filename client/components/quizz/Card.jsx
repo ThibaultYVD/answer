@@ -2,6 +2,7 @@ import React from "react";
 import { Link } from "react-router-dom";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import { FaEdit, FaTrash   } from "react-icons/fa";
 
 const QuizCard = ({ quiz, isAdmin }) => {
   const navigate = useNavigate();
@@ -50,20 +51,7 @@ const QuizCard = ({ quiz, isAdmin }) => {
           {isAdmin && (
             <Link to={`/quizz/${quiz.quiz_id}/edit`}>
               <button className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg hover:from-purple-700 hover:to-blue-700 transition-all duration-200 text-sm font-medium">
-                Modifier
-                <svg
-                  className="ml-2 h-4 w-4"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="M9 5l7 7-7 7"
-                  />
-                </svg>
+                <FaEdit />
               </button>
             </Link>
           )}
@@ -72,20 +60,7 @@ const QuizCard = ({ quiz, isAdmin }) => {
               className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg hover:from-purple-700 hover:to-blue-700 transition-all duration-200 text-sm font-medium"
               onClick={deleteQuizz}
             >
-              Supprimer
-              <svg
-                className="ml-2 h-4 w-4"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M9 5l7 7-7 7"
-                />
-              </svg>
+              <FaTrash  />
             </button>
           )}
           <span className="text-sm text-gray-500">Quiz #{quiz.quiz_id}</span>

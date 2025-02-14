@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import axios from "axios";
 import { useNavigate, useParams } from "react-router-dom";
 import { useAuth } from "@hooks/useAuth";
+import { FaTrash } from "react-icons/fa";
 
 interface Answer {
   answer_id: number | string;
@@ -401,7 +402,7 @@ const EditQuestionPage: React.FC = () => {
                     onClick={() => handleRemoveQuestion(index)}
                     className="text-red-500 hover:text-red-700 transition-colors font-bold text-xl"
                   >
-                    ×
+                    <FaTrash/>
                   </button>
                 </div>
                 <ul className="list-disc pl-5 space-y-1">
