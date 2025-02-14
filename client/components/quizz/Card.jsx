@@ -9,7 +9,7 @@ const QuizCard = ({ quiz, isAdmin }) => {
   const deleteQuizz = async () => {
     try {
       const response = await axios.delete(
-        `http://localhost:3001/admin/delete/${quiz.quiz_id}`
+        `http://data:3001/admin/delete/${quiz.quiz_id}`
       );
 
       if (response.status === 200) {

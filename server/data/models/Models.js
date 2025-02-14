@@ -144,6 +144,7 @@ Object.values(db).forEach((model) => {
 		defaults: { role_name: 'admin' },
 	});
 
+	
 	console.log('Données insérées avec succès !');
 })();
 
