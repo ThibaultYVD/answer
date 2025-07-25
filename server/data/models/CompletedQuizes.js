@@ -1,15 +1,15 @@
 module.exports = (sequelize, Sequelize) => {
-	const CompletedQuizes = sequelize.define('completed_quizes', {
-		user_id: {
-			type: Sequelize.INTEGER,
-			primaryKey: true,
-			references: {
-				model: 'quizzes',
-				key: 'quiz_id',
-			},
-			onDelete: 'CASCADE',
-		},
-		user_id: {
+        const CompletedQuizes = sequelize.define('completed_quizes', {
+                quiz_id: {
+                        type: Sequelize.INTEGER,
+                        primaryKey: true,
+                        references: {
+                                model: 'quizzes',
+                                key: 'quiz_id',
+                        },
+                        onDelete: 'CASCADE',
+                },
+                user_id: {
 			type: Sequelize.INTEGER,
 			primaryKey: true,
 			references: {
